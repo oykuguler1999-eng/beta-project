@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { getDb, type Competitor } from "@/lib/db";
+import { getDb, rowsToObjects, type Competitor } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-function getSummary() {
-  const db = getDb();
-  const rows = db
-    .prepare("SELECT * FROM competitors ORDER BY market_share_percent DESC")
-    .all() as Competitor[];
+async function getSummary() {
+  const db = await getDb();
+  const rs = await db.execute(
+    "SELECT * FROM competitors ORDER BY market_share_percent DESC"
+  );
+  const rows = rowsToObjects<Competitor>(rs);
 
   const own = rows.find((r) => r.is_own_company);
   const topCompetitor = rows.find((r) => !r.is_own_company);
@@ -47,8 +48,8 @@ const MODULES = [
   },
 ];
 
-export default function OverviewPage() {
-  const { own, topCompetitor, lastUpdated, rows } = getSummary();
+export default async function OverviewPage() {
+  const { own, topCompetitor, lastUpdated, rows } = await getSummary();
 
   return (
     <div className="space-y-8">

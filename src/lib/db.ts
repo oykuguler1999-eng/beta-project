@@ -1,23 +1,28 @@
-import Database from "better-sqlite3";
+import { createClient, type Client, type ResultSet } from "@libsql/client";
 import path from "path";
 import fs from "fs";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-const DB_PATH = path.join(DATA_DIR, "app.db");
-
 declare global {
-  var __betaDb: Database.Database | undefined;
+  var __betaDbClient: Client | undefined;
+  var __betaDbReady: Promise<void> | undefined;
 }
 
-function createConnection(): Database.Database {
-  const db = new Database(DB_PATH);
-  db.pragma("journal_mode = WAL");
+function createConnection(): Client {
+  const url = process.env.TURSO_DATABASE_URL;
 
-  db.exec(`
+  if (!url) {
+    const DATA_DIR = path.join(process.cwd(), "data");
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    return createClient({ url: `file:${path.join(DATA_DIR, "app.db")}` });
+  }
+
+  return createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
+}
+
+async function ensureSchema(client: Client) {
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS competitors (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -30,17 +35,27 @@ function createConnection(): Database.Database {
       notable_projects TEXT,
       notes TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+    )
   `);
-
-  return db;
 }
 
-export function getDb(): Database.Database {
-  if (!global.__betaDb) {
-    global.__betaDb = createConnection();
+export async function getDb(): Promise<Client> {
+  if (!global.__betaDbClient) {
+    global.__betaDbClient = createConnection();
+    global.__betaDbReady = ensureSchema(global.__betaDbClient);
   }
-  return global.__betaDb;
+  await global.__betaDbReady;
+  return global.__betaDbClient;
+}
+
+export function rowsToObjects<T>(rs: ResultSet): T[] {
+  return rs.rows.map((row) => {
+    const obj: Record<string, unknown> = {};
+    rs.columns.forEach((col, i) => {
+      obj[col] = (row as unknown as unknown[])[i];
+    });
+    return obj as T;
+  });
 }
 
 export type Competitor = {
