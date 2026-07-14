@@ -1,27 +1,21 @@
-import { ComingSoon } from "@/components/ComingSoon";
+import { TendersBoard } from "@/components/TendersBoard";
 
 export default function IhalelerPage() {
   return (
-    <ComingSoon
-      title="İhaleler"
-      intro="Trafo ile ilgili güncel ve sonuçlanmış (kazanılan/kaybedilen) ihalelerin tek yerden takip edildiği modül."
-      dataSourceNotes={[
-        {
-          label: "EKAP (Elektronik Kamu Alımları Platformu) — açık ihale ilanları",
-          detail:
-            "Kamu İhale Kurumu'nun ilan bülteninde yayımlanan ihaleler herkese açıktır; anahtar kelime ile (trafo, güç trafosu, dağıtım trafosu vb.) günlük taranıp listeye eklenebilir. Detaylı ihale evrakı ve teklif bilgileri için EKAP'a kurumsal giriş gerekir.",
-        },
-        {
-          label: "İhale sonuç ilanları",
-          detail:
-            "Kazanılan/kaybedilen ihale sonuçları Kamu İhale Bülteni'nde ayrıca yayımlanır; bunlar da halka açık kaynaklardan periyodik olarak çekilip geçmiş performans tablosuna işlenebilir.",
-        },
-        {
-          label: "Özel sektör / yurt dışı ihaleleri",
-          detail:
-            "TEDAŞ, dağıtım şirketleri veya yurt dışı ihaleleri için tekil kaynaklar farklıdır; hangi kurumların takip edileceği netleşince kaynak listesi genişletilebilir.",
-        },
-      ]}
-    />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold text-slate-100">İhaleler</h1>
+        <p className="mt-1 max-w-3xl text-sm text-slate-400">
+          EKAP&apos;ın (Elektronik Kamu Alımları Platformu) genel ilan
+          bülteni otomatik taranabilecek basit bir herkese açık API
+          sunmuyor — sağlıklı bir otomatik entegrasyon için EKAP&apos;a
+          kurumsal erişiminiz olup olmadığının netleşmesi gerekiyor. O yüzden
+          bu modül şimdilik ekibin ihaleleri elle ekleyip durumunu (açık /
+          kazanıldı / kaybedildi) güncellediği bir takip listesi olarak
+          çalışıyor.
+        </p>
+      </div>
+      <TendersBoard />
+    </div>
   );
 }

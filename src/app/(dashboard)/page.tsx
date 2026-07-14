@@ -31,20 +31,20 @@ const MODULES = [
   {
     href: "/ihaleler",
     title: "İhaleler",
-    status: "Kurulum bekliyor",
-    description: "Güncel ve kazanılan trafo ihaleleri takibi.",
+    status: "Aktif (manuel takip)",
+    description: "Güncel ve kazanılan trafo ihalelerinin elle girilen takibi.",
   },
   {
     href: "/trade-data",
     title: "Trade Data & Comext",
-    status: "Kurulum bekliyor",
-    description: "Günlük dış ticaret verileri, Eurostat Comext entegrasyonu.",
+    status: "Aktif (otomatik)",
+    description: "Eurostat Comext'ten günlük otomatik çekilen dış ticaret verileri.",
   },
   {
     href: "/haberler",
     title: "Haberler & Teknoloji",
-    status: "Kurulum bekliyor",
-    description: "Sektör haberleri ve yeni teknoloji gelişmeleri akışı.",
+    status: "Aktif (otomatik)",
+    description: "RSS kaynaklarından günlük otomatik taranan sektör haberleri.",
   },
 ];
 
@@ -111,7 +111,7 @@ export default async function OverviewPage() {
                 <h3 className="font-medium text-slate-100">{m.title}</h3>
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs ${
-                    m.status === "Aktif"
+                    m.status.startsWith("Aktif")
                       ? "bg-emerald-500/10 text-emerald-400"
                       : "bg-slate-800 text-slate-400"
                   }`}

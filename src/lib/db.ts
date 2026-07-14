@@ -37,6 +37,68 @@ async function ensureSchema(client: Client) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS news_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      link TEXT NOT NULL UNIQUE,
+      source TEXT,
+      summary TEXT,
+      published_at TEXT,
+      fetched_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS trade_data (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      period TEXT NOT NULL,
+      reporter TEXT NOT NULL,
+      partner TEXT NOT NULL,
+      flow TEXT NOT NULL,
+      cn_code TEXT NOT NULL,
+      value_eur REAL,
+      fetched_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(period, reporter, partner, flow, cn_code)
+    )
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS fetch_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      job TEXT NOT NULL,
+      status TEXT NOT NULL,
+      message TEXT,
+      ran_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS tenders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      institution TEXT,
+      status TEXT NOT NULL DEFAULT 'acik',
+      amount REAL,
+      currency TEXT DEFAULT 'TRY',
+      deadline_date TEXT,
+      notes TEXT,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+}
+
+export async function logFetch(
+  job: string,
+  status: "ok" | "error",
+  message: string
+) {
+  const db = await getDb();
+  await db.execute({
+    sql: "INSERT INTO fetch_log (job, status, message) VALUES (?, ?, ?)",
+    args: [job, status, message],
+  });
 }
 
 export async function getDb(): Promise<Client> {
@@ -70,4 +132,45 @@ export type Competitor = {
   notable_projects: string | null;
   notes: string | null;
   updated_at: string;
+};
+
+export type Tender = {
+  id: number;
+  title: string;
+  institution: string | null;
+  status: "acik" | "kazanildi" | "kaybedildi";
+  amount: number | null;
+  currency: string | null;
+  deadline_date: string | null;
+  notes: string | null;
+  updated_at: string;
+};
+
+export type NewsItem = {
+  id: number;
+  title: string;
+  link: string;
+  source: string | null;
+  summary: string | null;
+  published_at: string | null;
+  fetched_at: string;
+};
+
+export type TradeDataRow = {
+  id: number;
+  period: string;
+  reporter: string;
+  partner: string;
+  flow: string;
+  cn_code: string;
+  value_eur: number | null;
+  fetched_at: string;
+};
+
+export type FetchLogEntry = {
+  id: number;
+  job: string;
+  status: "ok" | "error";
+  message: string | null;
+  ran_at: string;
 };
